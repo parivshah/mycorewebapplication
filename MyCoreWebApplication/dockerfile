@@ -1,0 +1,17 @@
+FROM microsoft/aspnetcore-build:2.0 as build
+WORKDIR /app
+
+# Copy csproj and restore as distinct layers
+Copy *.csproj ./
+RUN dotnet restore
+
+# Copy everything else and build
+Copy . ./
+RUN dotnet publish -c release -o out
+
+#Build runtime image
+FROM microsoft/aspnetcore:2.0
+WORKDIR /app
+EXPOSE 80
+Copy --from=build /app/out .
+ENTRYPOINT ["dotnet","MyCoreWebApplication.dll"]
